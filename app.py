@@ -48,7 +48,48 @@ class ImageToPDFConverterApp:
             self.selected_images_listbox.insert(tk.END, os.path.basename(path))
 
     def convert_images_to_pdf(self):
-        pass
+        if not self.image_paths:
+            messagebox.showwarning("Warning", "Please select at least one image.")
+            return
+
+        output_name = self.output_pdf_name.get().strip()
+        if not output_name:
+            messagebox.showwarning("Warning", "Please enter a name for the output PDF.")
+            return
+
+        if not output_name.lower().endswith(".pdf"):
+            output_name += ".pdf"
+
+        output_path = filedialog.asksaveasfilename(
+            initialfile=output_name,
+            defaultextension=".pdf",
+            filetypes=[("PDF files", "*.pdf"), ("All files", "*.*")],
+        )
+
+        if not output_path:
+            return
+
+        try:
+            images = [Image.open(path).convert("RGB") for path in self.image_paths]
+
+            if len(images) == 1:
+                images[0].save(output_path)
+            else:
+                images[0].save(
+                    output_path,
+                    save_all=True,
+                    append_images=images[1:],
+                    resolution=100.0,
+                )
+
+            messagebox.showinfo(
+                "Success",
+                f"Successfully converted {len(self.image_paths)} images to PDF!\n\nSaved as: {output_path}",
+            )
+
+        except Exception as e:
+            messagebox.showerror("Error", f"An error occurred: {str(e)}")
+
 
 def main():
     root = tk.Tk()
